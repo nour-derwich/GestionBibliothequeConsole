@@ -13,51 +13,73 @@ public class LibraryApplication {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         User currentUser = null;
-        
-        while (true) {
-            System.out.println("1. Register");
-            System.out.println("2. Login");
-            System.out.println("3. Search Books");
-            System.out.println("4. Add Book");
-            System.out.println("5. View History");
-            System.out.println("6. Exit");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
 
-            switch (choice) {
-                case 1:
-                    currentUser = registerUser(scanner);
-                    break;
-                case 2:
-                    currentUser = loginUser(scanner);
-                    break;
-                case 3:
-                    if (currentUser != null) {
+        while (true) {
+            if (currentUser == null) {
+                // Display menu options for non-logged-in users
+                System.out.println("1. Register");
+                System.out.println("2. Login");
+                System.out.println("3. Exit");
+                System.out.print("Choose an option: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        currentUser = registerUser(scanner);
+                        break;
+                    case 2:
+                        currentUser = loginUser(scanner);
+                        break;
+                    case 3:
+                        System.exit(0);
+                        break;
+                    default:
+                        System.out.println("Invalid choice.");
+                }
+            } else {
+                // Display menu options for logged-in users
+                System.out.println("1. Search Books");
+                System.out.println("2. Add Book");
+                System.out.println("3. Update Book");
+                System.out.println("4. Delete Book");
+                System.out.println("5. View All Books");
+                System.out.println("6. Edit User Info");
+                System.out.println("7. View History");
+                System.out.println("8. Logout");
+                System.out.print("Choose an option: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
                         searchBooks(scanner, currentUser);
-                    } else {
-                        System.out.println("Please login first.");
-                    }
-                    break;
-                case 4:
-                    if (currentUser != null) {
+                        break;
+                    case 2:
                         addBook(scanner, currentUser);
-                    } else {
-                        System.out.println("Please login first.");
-                    }
-                    break;
-                case 5:
-                    if (currentUser != null) {
+                        break;
+                    case 3:
+                        updateBook(scanner, currentUser);
+                        break;
+                    case 4:
+                        deleteBook(scanner, currentUser);
+                        break;
+                    case 5:
+                        viewAllBooks();
+                        break;
+                    case 6:
+                        editUserInfo(scanner, currentUser);
+                        break;
+                    case 7:
                         viewHistory(currentUser);
-                    } else {
-                        System.out.println("Please login first.");
-                    }
-                    break;
-                case 6:
-                    System.exit(0);
-                    break;
-                default:
-                    System.out.println("Invalid choice.");
+                        break;
+                    case 8:
+                        currentUser = null; // Log out
+                        System.out.println("Logged out.");
+                        break;
+                    default:
+                        System.out.println("Invalid choice.");
+                }
             }
         }
     }
@@ -124,40 +146,103 @@ public class LibraryApplication {
         Book book;
         switch (choice) {
             case 1:
-                book = bookService.addBook(title, author, genre);
+                book = new Book(null, title, author, genre);
+                book = bookService.addSpecializedBook(book);
                 break;
             case 2:
                 System.out.print("Enter journal name: ");
                 String journalName = scanner.nextLine();
                 book = new Article(null, title, author, genre, journalName);
+                book = bookService.addSpecializedBook(book);
                 break;
             case 3:
                 System.out.print("Enter issue: ");
                 String issue = scanner.nextLine();
                 book = new Magazine(null, title, author, genre, issue);
+                book = bookService.addSpecializedBook(book);
                 break;
             case 4:
                 System.out.print("Enter number of pages: ");
                 int numberOfPages = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
                 book = new Livre(null, title, author, genre, numberOfPages);
+                book = bookService.addSpecializedBook(book);
                 break;
             default:
                 System.out.println("Invalid choice.");
                 return;
         }
 
-        bookService.addBook(book.getTitle(), book.getAuthor(), book.getGenre());
         System.out.println("Book added: " + book);
         historiqueService.logAction(user, book, "Added");
     }
 
+    private static void updateBook(Scanner scanner, User user) {
+        System.out.print("Enter book ID to update: ");
+        Long id = scanner.nextLong();
+        scanner.nextLine(); // Consume newline
+
+        Optional<Book> bookOptional = bookService.getBookById(id);
+        if (bookOptional.isPresent()) {
+            Book book = bookOptional.get();
+            System.out.print("Enter new title (current: " + book.getTitle() + "): ");
+            String title = scanner.nextLine();
+            System.out.print("Enter new author (current: " + book.getAuthor() + "): ");
+            String author = scanner.nextLine();
+            System.out.print("Enter new genre (current: " + book.getGenre() + "): ");
+            String genre = scanner.nextLine();
+
+            bookService.updateBook(id, title, author, genre);
+            System.out.println("Book updated: " + book);
+            historiqueService.logAction(user, book, "Updated");
+        } else {
+            System.out.println("Book not found.");
+        }
+    }
+
+    private static void deleteBook(Scanner scanner, User user) {
+        System.out.print("Enter book ID to delete: ");
+        Long id = scanner.nextLong();
+        scanner.nextLine(); // Consume newline
+
+        Optional<Book> bookOptional = bookService.getBookById(id);
+        if (bookOptional.isPresent()) {
+            Book book = bookOptional.get();
+            bookService.deleteBook(id);
+            System.out.println("Book deleted: " + book);
+            historiqueService.logAction(user, book, "Deleted");
+        } else {
+            System.out.println("Book not found.");
+        }
+    }
+
+    private static void viewAllBooks() {
+        List<Book> books = bookService.getAllBooks();
+        if (books.isEmpty()) {
+            System.out.println("No books available.");
+        } else {
+            books.forEach(System.out::println);
+        }
+    }
+
+    private static void editUserInfo(Scanner scanner, User user) {
+        System.out.print("Enter new username (current: " + user.getUsername() + "): ");
+        String username = scanner.nextLine();
+        System.out.print("Enter new email (current: " + user.getEmail() + "): ");
+        String email = scanner.nextLine();
+        System.out.print("Enter new password: ");
+        String password = scanner.nextLine();
+
+        userService.updateUser(user.getId(), username, email, password);
+        System.out.println("User info updated.");
+    }
+
     private static void viewHistory(User user) {
-        List<Historique> historiqueList = historiqueService.getHistoriqueByUser(user);
-        if (historiqueList.isEmpty()) {
+        List<Historique> history = historiqueService.getHistoryByUser(user);
+        if (history.isEmpty()) {
             System.out.println("No history found.");
         } else {
-            historiqueList.forEach(System.out::println);
+            history.forEach(System.out::println);
         }
     }
 }

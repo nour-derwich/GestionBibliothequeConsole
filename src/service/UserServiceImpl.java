@@ -23,4 +23,22 @@ public class UserServiceImpl implements UserService {
                 .filter(user -> user.getUsername().equals(username) && user.getPassword().equals(password))
                 .findFirst();
     }
+
+    @Override
+    public void updateUser(Long id, String username, String email, String password) {
+        Optional<User> userOptional = getUserById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setPassword(password);
+        }
+    }
+
+    @Override
+    public Optional<User> getUserById(Long id) {
+        return users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst();
+    }
 }

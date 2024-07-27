@@ -1,28 +1,26 @@
 package model;
 
 public class Historique {
-    private Long id;
+    private long timestamp;
     private User user;
     private Book book;
     private String action;
-    private String timestamp; // Assuming timestamp as String for simplicity
 
-    public Historique(Long id, User user, Book book, String action, String timestamp) {
-        this.id = id;
+    // Constructor with all fields
+    public Historique(long timestamp, User user, Book book, String action) {
+        this.timestamp = timestamp;
         this.user = user;
         this.book = book;
         this.action = action;
-        this.timestamp = timestamp;
     }
 
     // Getters and Setters
-
-    public Long getId() {
-        return id;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public User getUser() {
@@ -49,22 +47,13 @@ public class Historique {
         this.action = action;
     }
 
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-
     @Override
     public String toString() {
         return "Historique{" +
-                "id=" + id +
+                "timestamp=" + timestamp +
                 ", user=" + user +
                 ", book=" + book +
                 ", action='" + action + '\'' +
-                ", timestamp='" + timestamp + '\'' +
                 '}';
     }
 }
