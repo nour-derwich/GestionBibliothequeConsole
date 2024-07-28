@@ -23,4 +23,9 @@ public class HistoriqueServiceImpl implements HistoriqueService {
                 .filter(h -> h.getUser().equals(user))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Historique> getAllHistory() {
+        return new ArrayList<>(historiqueList);
+    }
 }

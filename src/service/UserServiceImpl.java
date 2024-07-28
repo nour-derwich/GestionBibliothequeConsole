@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public class UserServiceImpl implements UserService {
     private List<User> users = new ArrayList<>();
-    private long userIdCounter = 1;
+    private Long userIdCounter = 1L;
 
     @Override
     public User registerUser(String username, String password, String email) {
@@ -26,19 +26,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(Long id, String username, String email, String password) {
-        Optional<User> userOptional = getUserById(id);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setPassword(password);
-        }
+        users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .ifPresent(user -> {
+                    user.setUsername(username);
+                    user.setEmail(email);
+                    user.setPassword(password);
+                });
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
-        return users.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst();
+    public List<User> getAllUsers() {
+        return new ArrayList<>(users);
     }
 }

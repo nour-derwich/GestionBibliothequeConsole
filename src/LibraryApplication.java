@@ -11,6 +11,9 @@ public class LibraryApplication {
     private static HistoriqueService historiqueService = new HistoriqueServiceImpl();
 
     public static void main(String[] args) {
+        // Pre-register the admin user
+        registerAdminUser();
+
         Scanner scanner = new Scanner(System.in);
         User currentUser = null;
 
@@ -39,48 +42,82 @@ public class LibraryApplication {
                 }
             } else {
                 // Display menu options for logged-in users
-                System.out.println("1. Search Books");
-                System.out.println("2. Add Book");
-                System.out.println("3. Update Book");
-                System.out.println("4. Delete Book");
-                System.out.println("5. View All Books");
-                System.out.println("6. Edit User Info");
-                System.out.println("7. View History");
-                System.out.println("8. Logout");
-                System.out.print("Choose an option: ");
-                int choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                if ("admin".equals(currentUser.getUsername())) {
+                    // Admin menu
+                    System.out.println("1. View All Users");
+                    System.out.println("2. View All History");
+                    System.out.println("3. Logout");
+                    System.out.print("Choose an option: ");
+                    int choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline
 
-                switch (choice) {
-                    case 1:
-                        searchBooks(scanner, currentUser);
-                        break;
-                    case 2:
-                        addBook(scanner, currentUser);
-                        break;
-                    case 3:
-                        updateBook(scanner, currentUser);
-                        break;
-                    case 4:
-                        deleteBook(scanner, currentUser);
-                        break;
-                    case 5:
-                        viewAllBooks();
-                        break;
-                    case 6:
-                        editUserInfo(scanner, currentUser);
-                        break;
-                    case 7:
-                        viewHistory(currentUser);
-                        break;
-                    case 8:
-                        currentUser = null; // Log out
-                        System.out.println("Logged out.");
-                        break;
-                    default:
-                        System.out.println("Invalid choice.");
+                    switch (choice) {
+                        case 1:
+                            viewAllUsers();
+                            break;
+                        case 2:
+                            viewAllHistory();
+                            break;
+                        case 3:
+                            currentUser = null; // Log out
+                            System.out.println("Logged out.");
+                            break;
+                        default:
+                            System.out.println("Invalid choice.");
+                    }
+                } else {
+                    // Regular user menu
+                    System.out.println("1. Search Books");
+                    System.out.println("2. Add Book");
+                    System.out.println("3. Update Book");
+                    System.out.println("4. Delete Book");
+                    System.out.println("5. View All Books");
+                    System.out.println("6. Edit User Info");
+                    System.out.println("7. View History");
+                    System.out.println("8. Logout");
+                    System.out.print("Choose an option: ");
+                    int choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline
+
+                    switch (choice) {
+                        case 1:
+                            searchBooks(scanner, currentUser);
+                            break;
+                        case 2:
+                            addBook(scanner, currentUser);
+                            break;
+                        case 3:
+                            updateBook(scanner, currentUser);
+                            break;
+                        case 4:
+                            deleteBook(scanner, currentUser);
+                            break;
+                        case 5:
+                            viewAllBooks();
+                            break;
+                        case 6:
+                            editUserInfo(scanner, currentUser);
+                            break;
+                        case 7:
+                            viewHistory(currentUser);
+                            break;
+                        case 8:
+                            currentUser = null; // Log out
+                            System.out.println("Logged out.");
+                            break;
+                        default:
+                            System.out.println("Invalid choice.");
+                    }
                 }
             }
+        }
+    }
+
+    private static void registerAdminUser() {
+        Optional<User> adminUser = userService.loginUser("admin", "admin");
+        if (!adminUser.isPresent()) {
+            userService.registerUser("admin", "admin", "admin@example.com");
+            System.out.println("Admin user registered.");
         }
     }
 
@@ -239,6 +276,24 @@ public class LibraryApplication {
 
     private static void viewHistory(User user) {
         List<Historique> history = historiqueService.getHistoryByUser(user);
+        if (history.isEmpty()) {
+            System.out.println("No history found.");
+        } else {
+            history.forEach(System.out::println);
+        }
+    }
+
+    private static void viewAllUsers() {
+        List<User> users = userService.getAllUsers();
+        if (users.isEmpty()) {
+            System.out.println("No users found.");
+        } else {
+            users.forEach(System.out::println);
+        }
+    }
+
+    private static void viewAllHistory() {
+        List<Historique> history = historiqueService.getAllHistory();
         if (history.isEmpty()) {
             System.out.println("No history found.");
         } else {
